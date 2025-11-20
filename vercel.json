@@ -6,6 +6,18 @@
       "use": "@vercel/static"
     }
   ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/html/login.html",
+      "permanent": false
+    },
+    {
+      "source": "/index.html",
+      "destination": "/html/login.html",
+      "permanent": false
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
