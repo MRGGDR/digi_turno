@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Digiturno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .container { max-width: 1000px; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Panel de Control</h1>
+            <button onclick="logout()" class="btn" style="width: auto; background: rgba(255,255,255,0.2); color: white;">Cerrar Sesión</button>
+        </div>
+
+        <!-- Login Overlay -->
+        <div id="loginOverlay" class="welcome-overlay">
+            <div class="card" style="width: 100%; max-width: 400px; background: white; color: var(--text-color);">
+                <h2>Acceso Administrativo</h2>
+                <p style="margin-bottom: 1rem; color: var(--text-light);">Ingresa tus credenciales institucionales.</p>
+
+                <div class="form-group">
+                    <input type="email" id="adminEmail" placeholder="admin@gestiondelriesgo.gov.co">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="adminPass" placeholder="Contraseña">
+                </div>
+
+                <button onclick="checkLogin()" class="btn btn-primary">Entrar</button>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+            <div class="stat-card">
+                <div class="stat-label">Turno Actual</div>
+                <div class="stat-value" id="currentTurn">--</div>
+                <div id="currentName" style="color: var(--text-light); font-weight: 600;">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">En Espera</div>
+                <div class="stat-value" id="waitingCount">--</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2>Controles</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button id="btnCallNext" class="btn btn-primary">🔔 Llamar Siguiente</button>
+                <button id="btnFinish" class="btn btn-danger">✅ Finalizar Actual</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Lista de Espera</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Turno</th>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="waitingList">
+                        <!-- Items populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        // Admin page script
+        const loginOverlay = document.getElementById('loginOverlay');
+        const adminEmailInput = document.getElementById('adminEmail');
+        const adminPassInput = document.getElementById('adminPass');
+        const btnCallNext = document.getElementById('btnCallNext');
+        const btnFinish = document.getElementById('btnFinish');
+
+        async function checkLogin() {
+            const correo = adminEmailInput.value.trim();
+            const password = adminPassInput.value;
+            const btn = document.querySelector('#loginOverlay .btn-primary');
+
+            if (!correo || !password) {
+                showToast('Ingresa correo y contraseña.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Verificando...';
+
+            try {
+                const res = await App.callAPI('adminLogin', { correo, password });
+                if (res.status === 'success') {
+                    localStorage.setItem('admin_token', 'true');
+                    loginOverlay.classList.add('hidden');
+                    startPolling();
+                } else {
+                    showToast(res.message || 'Credenciales inválidas', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Entrar';
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error de conexión', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Entrar';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            loginOverlay.classList.remove('hidden');
+        }
+
+        async function llamarSiguiente() {
+            if (!confirm('¿Llamar al siguiente turno?')) return;
+            const res = await App.callAPI('llamarSiguiente');
+            if (res.status === 'success') {
+                updateDashboard();
+            } else {
+                showToast(res.message || 'Error al llamar siguiente', 'error');
+            }
+        }
+
+        async function finalizarTurno() {
+            if (!confirm('¿Finalizar turno actual?')) return;
+            const res = await App.callAPI('finalizarTurno');
+            if (res.status === 'success') {
+                updateDashboard();
+            } else {
+                showToast(res.message || 'Error al finalizar', 'error');
+            }
+        }
+
+        function updateDashboard() {
+            App.callAPI('estadoTurnos').then(res => {
+                if (res.status === 'success') {
+                    // Update Current
+                    if (res.turno_actual) {
+                        document.getElementById('currentTurn').textContent = res.turno_actual.turno;
+                        document.getElementById('currentName').textContent = res.turno_actual.nombre;
+                    } else {
+                        document.getElementById('currentTurn').textContent = '--';
+                        document.getElementById('currentName').textContent = 'Nadie en atención';
+                    }
+
+                    // Update Waiting Count
+                    document.getElementById('waitingCount').textContent = res.total_en_espera;
+
+                    // Update Table
+                    const list = document.getElementById('waitingList');
+                    list.innerHTML = '';
+                    (res.lista_espera || []).forEach(t => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><span style="font-weight: 800; color: var(--primary-color);">#${t.turno}</span></td>
+                            <td>${t.nombre}</td>
+                            <td>${t.correo}</td>
+                            <td>${t.motivo}</td>
+                            <td><span class="status-badge status-waiting">En Espera</span></td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                }
+            }).catch(err => console.error('Error actualizando dashboard', err));
+        }
+
+        let pollInterval = null;
+        function startPolling() {
+            updateDashboard();
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(updateDashboard, 3000);
+        }
+
+        // Wire buttons
+        btnCallNext.addEventListener('click', llamarSiguiente);
+        btnFinish.addEventListener('click', finalizarTurno);
+
+        // Auto-login if token present
+        if (localStorage.getItem('admin_token')) {
+            loginOverlay.classList.add('hidden');
+            startPolling();
+        }
+    </script>
+</body>
+
+</html>

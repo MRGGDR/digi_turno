@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiTurno OAPI - Inicio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="login-container">
+        <div style="text-align: center;">
+            <div class="login-title">DigiTurno OAPI</div>
+            <p class="login-subtitle">Sistema de Gestión de Turnos</p>
+            <button onclick="showEmailInput()" class="btn-enter">Entrar</button>
+        </div>
+        <button onclick="window.location.href='admin.html'" class="admin-link">Admin</button>
+    </div>
+
+    <!-- Email Input Screen -->
+    <div id="emailScreen" class="login-container hidden">
+        <div class="card" style="max-width: 400px; width: 100%; margin: 0 1rem;">
+            <h2>Ingresa tu Correo</h2>
+            <p style="margin-bottom: 1.5rem; color: var(--text-light);">Para validar tu acceso</p>
+            <div class="form-group">
+                <input type="email" id="emailInput" placeholder="usuario@gestiondelriesgo.gov.co"
+                    style="text-align: center;">
+            </div>
+            <button id="btnContinue" onclick="validateEmail()" class="btn btn-primary">Continuar</button>
+            <button onclick="backToWelcome()"
+                style="margin-top: 1rem; background: none; border: none; color: var(--text-light); cursor: pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        <!DOCTYPE html>
+        <html lang="es">
+            <head>
+                <meta charset="utf-8">
+                <meta http-equiv="refresh" content="0; url=html/login.html">
+                <title>Redirecting...</title>
+                <script>window.location.href='html/login.html'</script>
+            </head>
+            <body>
+                Redirecting to organized site: <a href="html/login.html">Open login</a>
+            </body>
+        </html>

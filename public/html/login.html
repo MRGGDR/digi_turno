@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiTurno OAPI - Inicio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style></style>
+</head>
+
+<body class="login-body">
+    <main class="login-shell">
+        <!-- Welcome Screen -->
+        <section id="welcomeScreen" class="login-hero">
+            <div class="login-brand">DigiTurno OAPI</div>
+            <p class="login-tagline">Agenda tu turno con la Jefe de OAPI en segundos.</p>
+            <div class="login-actions">
+                <button onclick="showEmailInput()" class="btn btn-primary btn-hero">Solicitar turno</button>
+                <button id="adminLink" class="btn btn-secondary btn-hero">Panel Administrativo</button>
+            </div>
+            <div class="login-meta">
+                <span>Solo correos @gestiondelriesgo.gov.co</span>
+            </div>
+        </section>
+
+        <!-- Email Input Screen -->
+        <section id="emailScreen" class="login-overlay hidden">
+            <div class="login-card">
+                <h2>Ingresa tu Correo</h2>
+                <p class="login-description">Necesitamos validar que perteneces a la entidad.</p>
+                <div class="form-group">
+                    <label for="emailInput">Correo institucional</label>
+                    <input type="email" id="emailInput" placeholder="usuario@gestiondelriesgo.gov.co" autocomplete="email">
+                </div>
+                <button id="btnContinue" onclick="validateEmail()" class="btn btn-primary">Continuar</button>
+                <button type="button" class="text-link" onclick="backToWelcome()">Cancelar</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/script.js"></script>
+    <script>
+        function showEmailInput() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('emailScreen').classList.remove('hidden');
+        }
+
+        function backToWelcome() {
+            document.getElementById('emailScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
+        async function validateEmail() {
+            const email = document.getElementById('emailInput').value;
+            const btn = document.querySelector('#emailScreen .btn-primary');
+
+            if (!email || !email.endsWith('@gestiondelriesgo.gov.co')) {
+                showToast('Debes usar un correo institucional (@gestiondelriesgo.gov.co)', 'error');
+                return;
+            }
+
+            btn.textContent = "Verificando...";
+            btn.disabled = true;
+
+            try {
+                const res = await App.callAPI('checkSession', { correo: email });
+
+                if (res.status === 'success') {
+                    // Save email
+                    localStorage.setItem('user_email', email);
+
+                    if (res.hasTurno) {
+                        // User has active turn -> go to status page
+                        localStorage.setItem('mi_turno', res.turno);
+                        showToast('Tienes un turno activo. Redirigiendo...', 'info');
+                        setTimeout(() => window.location.href = '../html/estado.html', 700);
+                    } else {
+                        // No active turn -> go to request turn page
+                        showToast('Correo válido. Continúa para solicitar turno.', 'success');
+                        setTimeout(() => window.location.href = '../html/index.html', 700);
+                    }
+                } else {
+                    showToast(res.message || 'Error al verificar correo', 'error');
+                    btn.textContent = "Continuar";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Error de conexión', 'error');
+                btn.textContent = "Continuar";
+                btn.disabled = false;
+            }
+        }
+
+        // Auto-submit on Enter key
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInput = document.getElementById('emailInput');
+            if (emailInput) {
+                emailInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') validateEmail();
+                });
+            }
+
+            const adminLink = document.getElementById('adminLink');
+            if (adminLink) {
+                adminLink.addEventListener('click', () => {
+                    localStorage.removeItem('admin_token');
+                    window.location.href = '../html/admin.html';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

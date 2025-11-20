@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Turno - DigiTurno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style></style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Solicitar Turno</h1>
+            <p style="margin-bottom: 2rem; color: var(--text-light);">Completa tus datos para solicitar tu turno.</p>
+
+            <form id="turnoForm">
+                <div class="form-group">
+                    <label for="correo">Correo Institucional</label>
+                    <input type="email" id="correo" readonly style="background: #e2e8f0; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" required placeholder="Tu nombre">
+                </div>
+
+                <div class="form-group">
+                    <label for="motivo">Motivo de Visita</label>
+                    <input type="text" id="motivo" required placeholder="Describe brevemente el motivo...">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">Solicitar Turno</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="logout()" style="background: none; border: none; color: var(--text-light); text-decoration: underline; cursor: pointer;">Cambiar Usuario</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script>
+        // Check if user is logged in
+        const userEmail = localStorage.getItem('user_email');
+        if (!userEmail) {
+            window.location.href = '../html/login.html';
+        }
+
+        // Pre-fill email
+        document.getElementById('correo').value = userEmail;
+
+        function logout() {
+            App.clearTurno();
+            window.location.href = '../html/login.html';
+        }
+
+        document.getElementById('turnoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Procesando...';
+
+            const data = {
+                nombre: document.getElementById('nombre').value,
+                correo: userEmail,
+                motivo: document.getElementById('motivo').value
+            };
+
+            try {
+                const res = await App.callAPI('crearTurno', data);
+                if (res.status === 'success') {
+                    localStorage.setItem('mi_turno', res.turno);
+                    showToast('Turno creado: #' + res.turno, 'success');
+                    setTimeout(() => window.location.href = '../html/estado.html', 900);
+                } else {
+                    showToast(res.message || 'Error al crear turno', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Solicitar Turno';
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Error de conexión.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Solicitar Turno';
+            }
+        });
+    </script>
+</body>
+
+</html>
