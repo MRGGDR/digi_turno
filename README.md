@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/img/DIGITURNO.png" alt="DIGITURNO Banner" width="100%">
+  <img src="src/img/DIGITURNO.png" alt="DIGITURNO Banner" width="100%">
 
   # DIGITURNO
 
@@ -66,16 +66,23 @@ El proyecto está construido con una arquitectura ligera y eficiente, separando 
 ### Estructura del Proyecto
 
 ```text
-turnos_jefe/
+Digiturno/
 ├── backend/
 │   └── app.gs              # Lógica del servidor (Google Apps Script)
-├── public/                 # Archivos estáticos del Frontend
+├── src/                    # Archivos estáticos del Frontend
 │   ├── css/
 │   │   └── style.css       # Estilos de la aplicación
-│   ├── html/               # Vistas (Admin, Cliente, Pantalla, etc.)
-│   ├── js/                 # Lógica del cliente
+│   ├── pages/              # Vistas (Admin, Cliente, Pantalla, etc.)
+│   │   ├── login.html
+│   │   ├── index.html
+│   │   ├── admin.html
+│   │   ├── estado.html
+│   │   └── qr.html
+│   ├── js/
+│   │   └── script.js       # Lógica del cliente
 │   └── img/
 │       └── DIGITURNO.png   # Banner del proyecto
+├── README.md
 └── vercel.json             # Configuración de despliegue
 ```
 

@@ -2,26 +2,26 @@
   "version": 2,
   "builds": [
     {
-      "src": "public/**",
+      "src": "src/**",
       "use": "@vercel/static"
     }
   ],
   "redirects": [
     {
       "source": "/",
-      "destination": "/html/login.html",
+      "destination": "/pages/login.html",
       "permanent": false
     },
     {
       "source": "/index.html",
-      "destination": "/html/login.html",
+      "destination": "/pages/login.html",
       "permanent": false
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "/src/$1"
     }
   ]
 }

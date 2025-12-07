@@ -77,11 +77,11 @@
                         // User has active turn -> go to status page
                         localStorage.setItem('mi_turno', res.turno);
                         showToast('Tienes un turno activo. Redirigiendo...', 'info');
-                        setTimeout(() => window.location.href = '../html/estado.html', 700);
+                        setTimeout(() => window.location.href = './estado.html', 700);
                     } else {
                         // No active turn -> go to request turn page
                         showToast('Correo válido. Continúa para solicitar turno.', 'success');
-                        setTimeout(() => window.location.href = '../html/index.html', 700);
+                        setTimeout(() => window.location.href = './index.html', 700);
                     }
                 } else {
                     showToast(res.message || 'Error al verificar correo', 'error');
@@ -109,7 +109,7 @@
             if (adminLink) {
                 adminLink.addEventListener('click', () => {
                     localStorage.removeItem('admin_token');
-                    window.location.href = '../html/admin.html';
+                    window.location.href = './admin.html';
                 });
             }
         });

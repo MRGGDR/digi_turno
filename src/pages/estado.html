@@ -43,7 +43,7 @@
     <script>
         const miTurnoNum = App.getTurno();
         if (!miTurnoNum) {
-            window.location.href = '../html/login.html';
+            window.location.href = './login.html';
         }
 
         document.getElementById('miTurno').textContent = miTurnoNum;
@@ -106,7 +106,7 @@
 
         function salir() {
             App.clearTurno();
-            window.location.href = '../html/login.html';
+            window.location.href = './login.html';
         }
 
         // Poll every 3 seconds
